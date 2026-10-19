@@ -10,7 +10,7 @@
       </metadata>
       <version name="2.0" author="darin" time="2026-10-19T00:00:00Z">
         <changelog><![CDATA[Single Strength control (Light / Medium / Full) with a custom display.]]></changelog>
-        <source>https://raw.githubusercontent.com/FrantinoEnterprises/crossfeed-jsfx/v2.0/Crossfeed.jsfx</source>
+        <source>https://raw.githubusercontent.com/FrantinoEnterprises/crossfeed-jsfx/Crossfeed.jsfx</source>
       </version>
     </reapack>
   </category>
