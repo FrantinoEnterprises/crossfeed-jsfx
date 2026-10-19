@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<index version="1" name="Crossfeed">
+  <metadata>
+    <link rel="website">https://github.com/FrantinoEnterprises/crossfeed-jsfx</link>
+  </metadata>
+  <category name="Effects">
+    <reapack name="Crossfeed.jsfx" type="effect" desc="Crossfeed - speaker sound on headphones">
+      <metadata>
+        <link rel="website">https://github.com/FrantinoEnterprises/crossfeed-jsfx</link>
+      </metadata>
+      <version name="2.0" author="darin" time="2026-10-19T00:00:00Z">
+        <changelog><![CDATA[Single Strength control (Light / Medium / Full) with a custom display.]]></changelog>
+        <source>https://raw.githubusercontent.com/FrantinoEnterprises/crossfeed-jsfx/v2.0/Crossfeed.jsfx</source>
+      </version>
+    </reapack>
+  </category>
+</index>

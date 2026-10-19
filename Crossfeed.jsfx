@@ -1,0 +1,182 @@
+desc: Crossfeed - speaker sound on headphones
+author: darin
+version: 2.0
+about:
+  Headphone crossfeed based on Bauer's stereophonic-to-binaural (bs2b) filter.
+  Each ear also hears a low-passed, attenuated, slightly delayed copy of the
+  opposite channel, the way it would from a pair of speakers. The direct path
+  gets a gentle high shelf so the overall tonal balance stays flat.
+
+slider1:strength=1<0,2,1{Light,Medium,Full}>Strength
+
+in_pin:left input
+in_pin:right input
+out_pin:left output
+out_pin:right output
+
+@init
+lo_l = lo_r = 0;
+hi_l = hi_r = 0;
+asis_l = asis_r = 0;
+
+function update_coefs()
+(
+  // Light = Jan Meier, Medium = Chu Moy, Full = bs2b default
+  cutoff = strength == 0 ? 650 : 700;
+  feed = strength == 0 ? 9.5 : strength == 1 ? 6 : 4.5;
+
+  // bs2b coefficients
+  GB_lo = feed * -5 / 6 - 3;
+  GB_hi = feed / 6 - 3;
+  G_lo = 10 ^ (GB_lo / 20);
+  G_hi = 1 - 10 ^ (GB_hi / 20);
+  Fc_hi = cutoff * 2 ^ ((GB_lo - 20 * log10(G_hi)) / 12);
+
+  x = exp(-2 * $pi * cutoff / srate);
+  b1_lo = x;
+  a0_lo = G_lo * (1 - x);
+
+  x = exp(-2 * $pi * Fc_hi / srate);
+  b1_hi = x;
+  a0_hi = 1 - G_hi * (1 - x);
+  a1_hi = -x;
+
+  level_gain = 1 / (1 - G_hi + G_lo);
+  cur_strength = strength;
+);
+
+// UI drawing helpers
+function set_color(r, g, b, a) (gfx_r = r; gfx_g = g; gfx_b = b; gfx_a = a;);
+
+function text_centered(str, x, y) local(sw, sh)
+(
+  gfx_measurestr(str, sw, sh);
+  gfx_x = x - sw / 2;
+  gfx_y = y - sh / 2;
+  gfx_drawstr(str);
+);
+
+function thick_line(x1, y1, x2, y2, t) local(i, o)
+(
+  i = 0;
+  loop(t,
+    o = i - (t - 1) / 2;
+    gfx_line(x1 + o, y1, x2 + o, y2, 1);
+    i += 1;
+  );
+);
+
+function speaker(cx, cy) local(w, h)
+(
+  w = 40; h = 56;
+  set_color(0.22, 0.24, 0.28, 1);
+  gfx_rect(cx - w / 2, cy - h / 2, w, h);
+  set_color(0.40, 0.43, 0.48, 1);
+  gfx_roundrect(cx - w / 2, cy - h / 2, w, h, 4, 1);
+  set_color(0.08, 0.09, 0.10, 1);
+  gfx_circle(cx, cy - 13, 6, 1, 1);
+  gfx_circle(cx, cy + 9, 12, 1, 1);
+  set_color(0.40, 0.43, 0.48, 1);
+  gfx_circle(cx, cy + 9, 12, 0, 1);
+  gfx_circle(cx, cy + 9, 4, 1, 1);
+);
+
+@slider
+update_coefs();
+
+@block
+// Picks up clicks on the custom UI, which change strength from the gfx thread.
+strength != cur_strength ? update_coefs();
+
+@sample
+num_ch >= 2 ? (
+  inL = spl0;
+  inR = spl1;
+
+  // Cross path: low-pass of each channel, fed to the opposite ear.
+  lo_l = a0_lo * inL + b1_lo * lo_l;
+  lo_r = a0_lo * inR + b1_lo * lo_r;
+
+  // Direct path: high-boost shelf.
+  hi_l = a0_hi * inL + a1_hi * asis_l + b1_hi * hi_l;
+  hi_r = a0_hi * inR + a1_hi * asis_r + b1_hi * hi_r;
+  asis_l = inL;
+  asis_r = inR;
+
+  spl0 = (hi_l + lo_r) * level_gain;
+  spl1 = (hi_r + lo_l) * level_gain;
+);
+
+@gfx 440 300
+w = gfx_w; h = gfx_h;
+click = (mouse_cap & 1) && !(last_cap & 1);
+last_cap = mouse_cap;
+
+// Background
+set_color(0.10, 0.11, 0.13, 1);
+gfx_rect(0, 0, w, h);
+
+gfx_setfont(1, "Arial", 18, 'b');
+set_color(0.92, 0.93, 0.95, 1);
+text_centered("Crossfeed", w / 2, 22);
+
+// Scene geometry
+spk_y = 80;
+spk_lx = w * 0.18; spk_rx = w * 0.82;
+head_x = w / 2; head_y = h - 132; head_r = 32;
+ear_lx = head_x - head_r - 3; ear_rx = head_x + head_r + 3;
+
+// Sound paths: direct (same side) and crossfeed (opposite side)
+cross_a = strength == 0 ? 0.30 : strength == 1 ? 0.55 : 0.85;
+cross_t = strength == 0 ? 1 : strength == 1 ? 2 : 3;
+
+set_color(1.0, 0.62, 0.28, cross_a);
+thick_line(spk_lx + 20, spk_y + 10, ear_rx, head_y, cross_t);
+thick_line(spk_rx - 20, spk_y + 10, ear_lx, head_y, cross_t);
+
+set_color(0.35, 0.78, 0.98, 0.95);
+thick_line(spk_lx + 10, spk_y + 28, ear_lx, head_y, 3);
+thick_line(spk_rx - 10, spk_y + 28, ear_rx, head_y, 3);
+
+speaker(spk_lx, spk_y);
+speaker(spk_rx, spk_y);
+gfx_setfont(2, "Arial", 13);
+set_color(0.60, 0.63, 0.68, 1);
+text_centered("L", spk_lx, spk_y + 42);
+text_centered("R", spk_rx, spk_y + 42);
+
+// Head, seen from above: nose points toward the speakers
+set_color(0.82, 0.70, 0.60, 1);
+gfx_triangle(head_x - 7, head_y - head_r + 4, head_x + 7, head_y - head_r + 4, head_x, head_y - head_r - 9);
+gfx_circle(head_x, head_y, head_r, 1, 1);
+set_color(0.70, 0.58, 0.49, 1);
+gfx_circle(ear_lx, head_y, 7, 1, 1);
+gfx_circle(ear_rx, head_y, 7, 1, 1);
+
+// Strength buttons
+margin = 24; gap = 8; btn_h = 34;
+btn_y = h - btn_h - 46;
+btn_w = (w - 2 * margin - 2 * gap) / 3;
+gfx_setfont(1, "Arial", 15, 'b');
+i = 0;
+loop(3,
+  bx = margin + i * (btn_w + gap);
+  hover = mouse_x >= bx && mouse_x < bx + btn_w && mouse_y >= btn_y && mouse_y < btn_y + btn_h;
+  click && hover && strength != i ? (
+    strength = i;
+    slider_automate(strength);
+  );
+  strength == i ? set_color(0.35, 0.78, 0.98, 1)
+    : hover ? set_color(0.26, 0.28, 0.33, 1)
+    : set_color(0.18, 0.20, 0.23, 1);
+  gfx_rect(bx, btn_y, btn_w, btn_h);
+  strength == i ? set_color(0.06, 0.08, 0.10, 1) : set_color(0.85, 0.87, 0.90, 1);
+  text_centered(i == 0 ? "Light" : i == 1 ? "Medium" : "Full", bx + btn_w / 2, btn_y + btn_h / 2);
+  i += 1;
+);
+
+gfx_setfont(2, "Arial", 13);
+set_color(0.62, 0.65, 0.70, 1);
+text_centered(strength == 0 ? "Subtle - keeps most of the stereo width"
+  : strength == 1 ? "Balanced, classic crossfeed"
+  : "Closest to real speakers", w / 2, h - 24);
