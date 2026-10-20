@@ -18,11 +18,11 @@ ReaPack installs future versions when you run **Extensions → ReaPack → Synch
 ### Releasing a new version
 
 1. Edit `Crossfeed.jsfx` and bump `version:` in its header.
-2. In `index.xml`, add a new `<version>` block (keep the old ones) with the same version number, a changelog, and a source URL pointing at the new tag, e.g. `.../crossfeed-jsfx/v2.1/Crossfeed.jsfx`.
+2. In `index.xml`, add a new `<version>` block (keep the old ones) with the same version number, a changelog, and a source URL pointing at the new tag, e.g. `.../crossfeed-jsfx/v1.1/Crossfeed.jsfx`.
 3. Commit, tag, and push:
    ```sh
-   git commit -am "Crossfeed 2.1"
-   git tag v2.1
+   git commit -am "Crossfeed 1.1"
+   git tag v1.1
    git push origin main --tags
    ```
 

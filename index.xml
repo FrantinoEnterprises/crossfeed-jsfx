@@ -8,9 +8,9 @@
       <metadata>
         <link rel="website">https://github.com/FrantinoEnterprises/crossfeed-jsfx</link>
       </metadata>
-      <version name="2.0" author="darin" time="2026-10-19T00:00:00Z">
-        <changelog><![CDATA[Single Strength control (Light / Medium / Full) with a custom display.]]></changelog>
-        <source>https://raw.githubusercontent.com/FrantinoEnterprises/crossfeed-jsfx/Crossfeed.jsfx</source>
+      <version name="1.0" author="darin" time="2026-10-19T00:00:00Z">
+        <changelog><![CDATA[Initial release.]]></changelog>
+        <source>https://raw.githubusercontent.com/FrantinoEnterprises/crossfeed-jsfx/v1.0/Crossfeed.jsfx</source>
       </version>
     </reapack>
   </category>

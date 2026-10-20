@@ -1,6 +1,6 @@
 desc: Crossfeed - speaker sound on headphones
 author: darin
-version: 2.0
+version: 1.0
 about:
   Headphone crossfeed based on Bauer's stereophonic-to-binaural (bs2b) filter.
   Each ear also hears a low-passed, attenuated, slightly delayed copy of the
